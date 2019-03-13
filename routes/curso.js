@@ -6,7 +6,12 @@ var ethers = require('ethers');
 
 var config = require("../config");
 
-var ethProvider = new ethers.providers.InfuraProvider("ropsten","79f3534c6c384e52855ac864d523db3b");
+//var ethProvider = new ethers.providers.InfuraProvider("ropsten","79f3534c6c384e52855ac864d523db3b");
+//var ethProvider = new ethers.providers.HttpProvider('http://127.0.0.1:8545');
+//let ethProvider = new ethers.providers.JsonRpcProvider();
+let path = "/home/gzlm/.ethereum/testnet/geth.ipc";
+let ethProvider = new ethers.providers.IpcProvider(path);
+
 
 // -----------------------------------
 //wallet para transacciones
@@ -33,18 +38,6 @@ router.post("/", function(req, res){
         console.log(_codigo);
         console.log('invoca funcion del smart conract');
 
-        let overrides = {
-
-            // The address to execute the call as
-            from: "0x5c6388A5a066A43E0137AD86043a6E24ab7E6F49",
-        
-            // The maximum units of gas for the transaction to use
-            gasLimit: 3000000,
-
-            // The price (in wei) per unit of gas
-            gasPrice: ethers.utils.parseUnits('20.0', 'gwei'),
-        
-        };
 
         var sendPromise = contract_sign.registraAlumno(_addAlumno,
              ethers.utils.bigNumberify(_matricula),
@@ -54,12 +47,23 @@ router.post("/", function(req, res){
 
         console.log('Gestiona la respuesta');
         sendPromise.then(function(transaction){
-            results.push({
-                result: "OK",
-                tx_hash: transaction.hash
-            });
-            console.log('Alumno registrado' + transaction.hash);
-            res.status(200).send(results); 
+            
+                results.push({
+                    result: "OK",
+                    tx_hash: transaction.hash
+                });
+                console.log('Alumno registrado' + transaction.hash);
+                res.status(200).send(results); 
+            
+        }).catch((error) =>{
+
+                results.push({
+                    result: "error",
+                    mensaje: error
+                });
+                console.log('Alumno NO registrado');
+                res.status(500).send(results); 
+
         }); 
 
         //res.status(200).send('Cursos API - registra alumno'); 
